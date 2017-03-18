@@ -1,0 +1,7 @@
+CHIP dum {
+	
+	IN a, b;
+	OUT out;
+
+	BUILTIN Nand;
+}
