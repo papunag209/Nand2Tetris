@@ -43,23 +43,33 @@ CHIP ALU {
 
     PARTS:
    // Put you code here:
-    Not16(in=x, out=notx);
-    Mux4Way16(a=x, b=notx, c=false, d=true, sel[0]=nx, sel[1]=zx, out=x1);
 
-    Not16(in=y, out=noty);
-    Mux4Way16(a=y, b=noty, c=false, d=true, sel[0]=ny, sel[1]=zy, out=y1);
+    //bus for nulling inputs
+    Null16(out = nullbus);
 
-    And16(a=x1, b=y1, out=c1);
-    Add16(a=x1, b=y1, out=c2);
-    Mux16(a=c1, b=c2, sel=f, out=c);
+    //select null or real input for calculations
+    Mux16(a = nullbus, b = x, sel = zx, out = tmpx);
+    Mux16(a = nullbus, b = y, sel = zy, out = tmpy);
 
-    Not16(in=c, out=nc);
-    Mux16(a=c, b=nc, sel=no, out=out,
-                             out[15]=ng, // wtf?
-                             out[0..7]=l, out[8..15]=r);
+    //negate busses
+    Not16(in = tmpx, out = notx);
+    Inc16(in = notx, out = negx);
+    Not16(in = tmpy, out = noty);
+    Inc16(in = noty, out = negy);
 
-    Or8Way(in=l, out=low);
-    Or8Way(in=r, out=high);
-    Or(a=low, b=high, out=t);
-    Not(in=t, out=zr);
+    Add16(a = x, b = y, out = addxy);
+    And16(a = x, b = y, out = andxy);
+
+    Mux16(a = andxy, b = addxy, sel = f, out = outbus);
+
+    Not16(in = outbus, out = notoutbus);
+    Inc16(in = notoutbus, out = negoutbus);
+
+    Pass16(in = outbus, out = out);
+
+    Pass(in = outbus[15], out = signbit)
+    Pass(in = signbit, out = ng);
+    Xor(a = signbit, b = signbit, out = ng);
+    // And16(x = x, y = notx, )
+
 }
