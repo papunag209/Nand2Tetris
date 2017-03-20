@@ -1,0 +1,16 @@
+CHIP Pass{
+    IN in;
+    OUT out;
+
+    PARTS:
+	Or(a = in, b = in, out = out);
+}
+
+/*CHIP Not {
+    IN in;
+    OUT out;
+
+    PARTS:
+    // Put your code here:
+    Nand(a = in, b = in, out = out);
+}*/

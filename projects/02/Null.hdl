@@ -1,0 +1,11 @@
+//chip for null generation
+
+CHIP Null{
+	IN
+		;
+	OUT
+		out;
+
+	PARTS:
+	Not(in = true, out = out);
+}
