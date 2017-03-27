@@ -48,28 +48,49 @@ CHIP ALU {
     Null16(out = nullbus);
 
     //select null or real input for calculations
-    Mux16(a = nullbus, b = x, sel = zx, out = tmpx);
-    Mux16(a = nullbus, b = y, sel = zy, out = tmpy);
+    Mux16(a = x, b = nullbus, sel = zx, out = tmpx);
+    Mux16(a = y, b = nullbus, sel = zy, out = tmpy);
 
     //negate busses
-    Not16(in = tmpx, out = notx);
-    Inc16(in = notx, out = negx);
-    Not16(in = tmpy, out = noty);
-    Inc16(in = noty, out = negy);
+    //Not16(in = tmpx, out = notx);
+    //Inc16(in = notx, out = negx);
+    //Not16(in = tmpy, out = noty);
+    //Inc16(in = noty, out = negy);
 
-    Add16(a = x, b = y, out = addxy);
-    And16(a = x, b = y, out = andxy);
+    Not16(in = tmpx, out = negx);
+    //Inc16(in = notx, out = negx);
+    Not16(in = tmpy, out = negy);
+    //Inc16(in = noty, out = negy);
 
+    //select real or negated inouts
+    Mux16(a = tmpx, b = negx, sel = nx, out = finalx);
+    Mux16(a = tmpy, b = negy, sel = ny, out = finaly);
+
+    //calculations
+    Add16(a = finalx, b = finaly, out = addxy);
+    And16(a = finalx, b = finaly, out = andxy);
+
+    //output busses 
     Mux16(a = andxy, b = addxy, sel = f, out = outbus);
 
-    Not16(in = outbus, out = notoutbus);
-    Inc16(in = notoutbus, out = negoutbus);
+    //negate output
+    Not16(in = outbus, out = negoutbus);
+    
+    //select negative outbus if requred
+    Mux16(a = outbus, b = negoutbus, sel = no, out = outfinal);
+    Mux16(a = outbus, b = negoutbus, sel = no, out[15] = signbit);
 
-    Pass16(in = outbus, out = out);
+    // output result
+    Pass16(in = outfinal, out = out);
 
-    Pass(in = outbus[15], out = signbit)
+    //output signbit
     Pass(in = signbit, out = ng);
-    Xor(a = signbit, b = signbit, out = ng);
-    // And16(x = x, y = notx, )
 
+    //calculate if the result is zero using signbit
+    Not16(in = outfinal, out = bus1);
+    Inc16(in = bus1, out[15] = negsignbit);
+    Xor(a = negsignbit, b = signbit, out = zrresbus);
+    Not(in = zrresbus, out = zr);
+
+    // And16(x = x, y = notx, )
 }
